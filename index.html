@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kick off Optimización UNACEM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Concepto: hoja de proceso técnica en claro, con cuadrícula. Un engranaje rojo arranca la carga y un tajo rojo diagonal revela el flyer. */
+:root{
+  --paper:#f4f4f5;
+  --ink:#1c1c1f;
+  --ink-2:#2b2c30;
+  --steel:#8c8f96;
+  --line:rgba(28,28,31,.09);
+  --red:#e3121c;
+  --red-deep:#8f0b12;
+  --red-hi:#ff4a52;
+  --display:"Archivo","Arial Black",Impact,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--mono)}
+
+.scene{position:relative;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;isolation:isolate}
+.scene::before{content:"";position:absolute;inset:0;z-index:-2;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;
+  -webkit-mask-image:radial-gradient(120% 80% at 50% 45%,#000 30%,transparent 82%);mask-image:radial-gradient(120% 80% at 50% 45%,#000 30%,transparent 82%)}
+.tri1{position:absolute;top:0;right:0;z-index:-1;width:min(28vw,130px);aspect-ratio:1;
+  background:linear-gradient(135deg,var(--red-hi),var(--red) 55%,var(--red-deep));clip-path:polygon(0 0,100% 0,100% 100%)}
+.tri2{position:absolute;right:0;top:34%;z-index:-1;width:min(46vw,220px);aspect-ratio:.6;
+  background:rgba(28,28,31,.05);clip-path:polygon(100% 0,100% 100%,0 50%)}
+
+.top{display:flex;align-items:center;gap:12px;padding:18px 16px 0;font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase}
+.top .dot{width:8px;height:8px;background:var(--red)}
+.top .bar{width:1px;height:12px;background:var(--steel)}
+
+.stage{display:grid;place-items:center;padding:12px 16px 20px;position:relative}
+.cover,.result{grid-area:1/1;width:100%;max-width:420px}
+.cover{display:flex;flex-direction:column;gap:14px;transition:opacity .35s,transform .5s,visibility 0s}
+.done .cover{opacity:0;visibility:hidden;transform:scale(.94);pointer-events:none;transition:opacity .3s,transform .5s,visibility 0s .5s}
+
+.rule{display:block;width:44px;height:3px;background:var(--red);margin-bottom:12px}
+h1{margin:0;font:900 clamp(26px,8.2vw,36px)/1.02 var(--display);letter-spacing:-.025em;text-wrap:balance}
+h1 em{display:block;font-style:normal;color:var(--red)}
+.sub{margin:10px 0 0;font:700 clamp(15px,4.4vw,18px)/1.2 var(--display);letter-spacing:-.01em}
+
+.gearwrap{display:grid;place-items:center}
+.gearbtn{position:relative;display:block;width:min(100%,clamp(200px,calc(100svh - 440px),320px));aspect-ratio:1;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.gearbtn svg{display:block;width:100%;height:100%;filter:drop-shadow(0 12px 14px rgba(28,28,31,.22))}
+.gearbtn:focus-visible{outline:3px solid var(--ink);outline-offset:4px;border-radius:50%}
+.gA{fill:var(--ink-2)}
+.gB{fill:var(--steel)}
+.gM{stroke:rgba(0,0,0,.14);stroke-width:1}
+.hole{fill:var(--paper)}
+.hub{fill:var(--paper);stroke:var(--red);stroke-width:3}
+.t-num{font:900 54px var(--display);fill:var(--ink);text-anchor:middle}
+.t-oct{font:600 14px var(--mono);letter-spacing:.3em;fill:var(--red);text-anchor:middle}
+.t-pct{font:900 42px var(--display);fill:var(--ink);text-anchor:middle}
+.t-run{opacity:0}
+.running .t-idle{opacity:0}
+.running .t-run{opacity:1}
+.ping{position:absolute;left:50%;top:50%;width:35.5%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;border:2px solid var(--red);pointer-events:none;animation:ping 2.2s ease-out infinite}
+.running .ping{display:none}
+@keyframes ping{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.9);opacity:0}}
+
+.track{position:relative;--p:0}
+.track ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr)}
+.track li{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--steel);transition:color .3s}
+.track li i{position:relative;z-index:1;width:13px;height:13px;border-radius:50%;background:var(--paper);border:2px solid var(--steel);transition:background .3s,border-color .3s,box-shadow .3s}
+.track li.on{color:var(--ink)}
+.track li.on i{background:var(--red);border-color:var(--red);box-shadow:0 0 0 4px rgba(227,18,28,.18)}
+.rail,.fill{position:absolute;top:6px;height:2px}
+.rail{left:12.5%;right:12.5%;background:rgba(28,28,31,.16)}
+.fill{left:12.5%;width:calc(75% * var(--p));background:var(--red)}
+.status{margin:0;text-align:center;font:600 11px/1.3 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+
+.result{display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;visibility:hidden;transition:opacity .4s,visibility 0s .4s}
+.done .result{opacity:1;visibility:visible;transition:opacity .2s,visibility 0s}
+.frame{--w:min(100%,420px,calc((100svh - 300px) * .9124));position:relative;width:var(--w);aspect-ratio:1198/1313;overflow:hidden;border-radius:6px;transform:scale(.94);
+  box-shadow:0 18px 40px -18px rgba(28,28,31,.45),0 0 0 1px var(--line)}
+.frame img{display:block;width:100%;height:100%;object-fit:cover;clip-path:polygon(0 0,0 0,-30% 100%,-30% 100%)}
+.show .frame{transform:none;transition:transform .9s .1s cubic-bezier(.2,.7,.2,1);animation:glow 2.6s 1s ease-out both,pulso 2.8s 3.6s ease-in-out infinite}
+.show .frame img{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transition:clip-path .95s .1s cubic-bezier(.6,0,.2,1)}
+.slash{position:absolute;top:-10%;bottom:-10%;left:0;width:30%;opacity:0;pointer-events:none;transform:translateX(-100%) skewX(-14deg);
+  background:linear-gradient(90deg,var(--red-deep),var(--red) 55%,var(--red-hi))}
+.show .slash{animation:slash .95s .1s cubic-bezier(.6,0,.2,1) both}
+@keyframes slash{0%{opacity:1;transform:translateX(-100%) skewX(-14deg)}99%{opacity:1}100%{opacity:0;transform:translateX(283%) skewX(-14deg)}}
+.frame::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;transform:translateX(-130%);
+  background:linear-gradient(105deg,transparent 38%,rgba(227,18,28,.30) 50%,transparent 62%)}
+.show .frame::after{animation:sweep 3.8s 1.5s ease-in-out infinite}
+@keyframes sweep{0%{transform:translateX(-130%)}40%,100%{transform:translateX(130%)}}
+@keyframes glow{
+  0%{box-shadow:0 18px 40px -18px rgba(28,28,31,.45),0 0 0 1px var(--line)}
+  35%{box-shadow:0 0 0 2px rgba(227,18,28,.55),0 0 90px 18px rgba(227,18,28,.5)}
+  100%{box-shadow:0 0 0 1px rgba(227,18,28,.25),0 0 50px 4px rgba(227,18,28,.25)}}
+@keyframes pulso{
+  0%,100%{box-shadow:0 0 0 1px rgba(227,18,28,.25),0 0 50px 4px rgba(227,18,28,.25)}
+  50%{box-shadow:0 0 0 1px rgba(227,18,28,.4),0 0 80px 12px rgba(227,18,28,.45)}}
+
+.after{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 16px}
+.count{font:500 12px/1 var(--mono);letter-spacing:.06em;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.count b{font-weight:600;color:var(--red)}
+.again{background:transparent;border:1px solid var(--ink);color:var(--ink);font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:.75rem 1rem;border-radius:2px;cursor:pointer}
+.again:hover{background:var(--ink);color:var(--paper)}
+.again:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+
+.foot{background:var(--ink);color:#cfd0d4;padding:16px 16px 18px}
+.foot .mk{display:block;width:36px;height:3px;background:var(--red);margin-bottom:9px}
+.foot p{margin:0;font:500 10.5px/1.75 var(--mono);letter-spacing:.22em;text-transform:uppercase}
+.foot b{font-weight:600;color:#fff}
+
+.fx{position:absolute;left:0;top:0;width:0;height:0;z-index:9;pointer-events:none}
+.fx i{position:absolute;left:0;top:0;display:block;will-change:transform,opacity}
+.fx .st{background:var(--c,#e3121c);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);filter:drop-shadow(0 0 4px var(--c,#e3121c))}
+.fx .tw{background:var(--red);clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);filter:drop-shadow(0 0 5px rgba(227,18,28,.7))}
+.fx .rg{border:2px solid var(--red);border-radius:50%;box-shadow:0 0 18px rgba(227,18,28,.6),inset 0 0 14px rgba(227,18,28,.35)}
+.fx .fl{border-radius:50%;background:radial-gradient(circle,rgba(227,18,28,.55),rgba(227,18,28,.2) 40%,transparent 70%)}
+
+@media (prefers-reduced-motion:reduce){
+  .ping,.show .frame,.show .frame::after,.show .slash{animation:none}
+  .show .slash{opacity:0}
+  .frame,.show .frame{transform:none;transition:none}
+  .show .frame img{transition-duration:.01s;transition-delay:0s}
+  .cover,.result{transition-duration:.01s!important}
+  .fx{display:none}
+}
+</style>
+
+</head>
+<body>
+<main class="scene" id="scene">
+  <i class="tri1"></i><i class="tri2"></i>
+
+  <header class="top"><span class="dot"></span><span>Instituto UNACEM</span><span class="bar"></span><span>Kick off</span></header>
+
+  <section class="stage">
+    <div class="cover" id="cover">
+      <div class="title">
+        <span class="rule"></span>
+        <h1>Certificación en <em>Optimización de Procesos</em></h1>
+        <p class="sub">Kick off del programa</p>
+      </div>
+
+      <div class="gearwrap">
+        <button class="gearbtn" id="gear" type="button" aria-label="Iniciar el proceso y abrir la invitación">
+          <svg viewBox="-170 -170 340 340" aria-hidden="true">
+            <defs>
+              <radialGradient id="gm" r="1"><stop offset="0" stop-color="#ff4a52"/><stop offset=".6" stop-color="#e3121c"/><stop offset="1" stop-color="#b30e16"/></radialGradient>
+            </defs>
+            <g transform="translate(97.58,-97.58)"><g id="g2"><path id="p2" class="gA"/><circle class="hole" r="14"/><circle class="gA" r="4.5"/></g></g>
+            <g transform="translate(-97.58,97.58)"><g id="g3"><path id="p3" class="gB"/><circle class="hole" r="14"/><circle class="gB" r="4.5"/></g></g>
+            <g id="g1"><path id="p1" class="gM" fill="url(#gm)"/></g>
+            <circle class="hub" r="60"/>
+            <g class="t-idle">
+              <text class="t-num" y="12">28</text>
+              <text class="t-oct" x="4" y="36">OCT</text>
+            </g>
+            <text class="t-pct t-run" id="pct" y="15">0%</text>
+          </svg>
+          <span class="ping"></span>
+        </button>
+      </div>
+
+      <div class="track" id="track" aria-hidden="true">
+        <span class="rail"></span><span class="fill"></span>
+        <ol><li><i></i>Lugar</li><li><i></i>Sala</li><li><i></i>Fecha</li><li><i></i>Hora</li></ol>
+      </div>
+      <p class="status" id="status" aria-live="polite">Toca el engranaje para iniciar</p>
+    </div>
+
+    <div class="result" id="result">
+      <div class="frame" id="frame">
+        <img src="invitacion.jpg" alt="Invitación: Certificación en Optimización de Procesos. Kick off del programa. Lugar: Otavalo, sala Showroom. Fecha: 28 de octubre de 2026, 11:00.">
+        <span class="slash"></span>
+      </div>
+      <div class="after">
+        <span class="count" id="count"></span>
+        <button class="again" id="again" type="button">Volver a iniciar</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot"><span class="mk"></span><p>Personas que construyen<br><b>un mejor mañana</b></p></footer>
+  <div class="fx" id="fx" aria-hidden="true"></div>
+</main>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  var scene=document.getElementById('scene');
+  var statusEl=document.getElementById('status');
+  var pct=document.getElementById('pct');
+  var track=document.getElementById('track');
+  var dots=track.querySelectorAll('li');
+  var result=document.getElementById('result');
+  var frame=document.getElementById('frame');
+  var fx=document.getElementById('fx');
+  var g1=document.getElementById('g1'),g2=document.getElementById('g2'),g3=document.getElementById('g3');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var T0='Toca el engranaje para iniciar';
+  var timers=[],timerTw=null,raf=0,last=0,a1=0,spd=16,target=16,run=false;
+  var C=['#e3121c','#ff4a52','#2b2c30','#8c8f96','#ff8d93'];
+
+  // engranajes: 16 dientes (grande) y 8 (pequeños) con el mismo módulo, para que engranen
+  function gearPath(N,rp,add,ded,ph){
+    var ro=rp+add,ri=rp-ded,p=2*Math.PI/N,d='';
+    function P(r,a){return (r*Math.cos(a)).toFixed(2)+' '+(r*Math.sin(a)).toFixed(2)}
+    for(var i=0;i<N;i++){
+      var a=ph+i*p;
+      d+=(i?'A '+ri+' '+ri+' 0 0 1 '+P(ri,a-.30*p)+' ':'M '+P(ri,a-.30*p)+' ')
+        +'L '+P(ro,a-.14*p)+' L '+P(ro,a+.14*p)+' L '+P(ri,a+.30*p)+' ';
+    }
+    return d+'A '+ri+' '+ri+' 0 0 1 '+P(ri,ph-.30*p)+' Z';
+  }
+  document.getElementById('p1').setAttribute('d',gearPath(16,92,7,7,0));
+  document.getElementById('p2').setAttribute('d',gearPath(8,46,7,7,Math.PI/8));
+  document.getElementById('p3').setAttribute('d',gearPath(8,46,7,7,Math.PI/8));
+  for(var h=0;h<6;h++){
+    var c=document.createElementNS(NS,'circle');
+    var ang=h*Math.PI/3+Math.PI/6;
+    c.setAttribute('cx',(73.5*Math.cos(ang)).toFixed(2));
+    c.setAttribute('cy',(73.5*Math.sin(ang)).toFixed(2));
+    c.setAttribute('r','6.5');c.setAttribute('class','hole');
+    g1.appendChild(c);
+  }
+
+  function later(fn,ms){timers.push(setTimeout(fn,ms))}
+  function setRot(){
+    g1.setAttribute('transform','rotate('+a1.toFixed(2)+')');
+    g2.setAttribute('transform','rotate('+(-2*a1).toFixed(2)+')');
+    g3.setAttribute('transform','rotate('+(-2*a1).toFixed(2)+')');
+  }
+  function loop(t){
+    var dt=Math.min(.05,((t-last)/1000)||0);last=t;
+    spd+=(target-spd)*Math.min(1,dt*3.5);
+    a1+=spd*dt;setRot();
+    raf=requestAnimationFrame(loop);
+  }
+  function startLoop(){if(reduce)return;cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop)}
+
+  // efectos
+  function centro(el){var a=el.getBoundingClientRect(),s=scene.getBoundingClientRect();return{x:a.left-s.left+a.width/2,y:a.top-s.top+a.height/2,w:a.width,h:a.height}}
+  function pieza(clase,x,y,w,keys,opt){
+    var el=document.createElement('i');
+    el.className=clase;
+    el.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+w+'px;margin:'+(-w/2)+'px 0 0 '+(-w/2)+'px;opacity:0';
+    fx.appendChild(el);
+    var an=el.animate(keys,opt);
+    an.onfinish=function(){el.remove()};
+  }
+  function chispas(x,y,n,radio,tam){
+    for(var k=0;k<n;k++){
+      var ang=(Math.PI*2*k/n)+Math.random()*.5;
+      var d=radio*(.55+Math.random()*.6);
+      var dx=Math.cos(ang)*d,dy=Math.sin(ang)*d+radio*.15;
+      var w=tam*(.5+Math.random()*.9);
+      var el=document.createElement('i');
+      el.className='st';
+      el.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+w+'px;margin:'+(-w/2)+'px 0 0 '+(-w/2)+'px;--c:'+C[k%C.length]+';opacity:0';
+      fx.appendChild(el);
+      var giro=(Math.random()*180-90)+'deg';
+      var an=el.animate([
+        {transform:'translate(0,0) scale(0) rotate(0deg)',opacity:1},
+        {transform:'translate('+dx*.7+'px,'+dy*.7+'px) scale(1.1) rotate('+giro+')',opacity:1,offset:.45},
+        {transform:'translate('+dx+'px,'+(dy+radio*.25)+'px) scale(0) rotate('+giro+')',opacity:0}
+      ],{duration:900+Math.random()*700,easing:'cubic-bezier(.15,.7,.3,1)',delay:Math.random()*120});
+      an.onfinish=(function(e){return function(){e.remove()}})(el);
+    }
+  }
+  function destello(x,y,w){
+    pieza('fl',x,y,w,[{transform:'scale(.2)',opacity:1},{transform:'scale(9)',opacity:0}],{duration:900,easing:'ease-out'});
+    for(var r=0;r<3;r++){
+      pieza('rg',x,y,w,[{transform:'scale(.6)',opacity:1},{transform:'scale('+(8+r*3)+')',opacity:0}],{duration:1100+r*250,delay:r*160,easing:'cubic-bezier(.2,.6,.3,1)'});
+    }
+  }
+  function brilloGear(grande){
+    if(reduce)return;
+    var s=centro(document.getElementById('gear'));
+    destello(s.x,s.y,s.w*.12);
+    chispas(s.x,s.y,grande?80:60,s.w*(grande?1.5:1.2),s.w*.07);
+    chispas(s.x,s.y,30,s.w*.8,s.w*.1);
+  }
+  function brilloCarta(){
+    if(reduce)return;
+    var c=centro(frame);
+    destello(c.x,c.y,c.w*.2);
+    chispas(c.x,c.y,60,c.w*1.1,c.w*.09);
+    chispas(c.x,c.y-c.h*.25,40,c.w*.8,c.w*.07);
+    chispas(c.x,c.y+c.h*.25,40,c.w*.8,c.w*.07);
+    clearInterval(timerTw);
+    timerTw=setInterval(function(){
+      var k=frame.getBoundingClientRect(),s=scene.getBoundingClientRect();
+      var w=k.width*(.03+Math.random()*.045);
+      var x=k.left-s.left+Math.random()*k.width,y=k.top-s.top+Math.random()*k.height;
+      pieza('tw',x,y,w,[{transform:'scale(0) rotate(0deg)',opacity:0},{transform:'scale(1.2) rotate(45deg)',opacity:1,offset:.5},{transform:'scale(0) rotate(90deg)',opacity:0}],{duration:900+Math.random()*600,easing:'ease-in-out'});
+    },260);
+  }
+
+  // progreso
+  function setP(p){
+    track.style.setProperty('--p',p);
+    pct.textContent=Math.round(p*100)+'%';
+    for(var i=0;i<dots.length;i++)dots[i].classList.toggle('on',p>0&&p>=i/3);
+    statusEl.textContent=p<=0?T0:(p<.3?'Iniciando proceso':(p<.96?'Optimizando':'Proceso listo'));
+  }
+  function iniciar(){
+    if(run)return;
+    run=true;scene.classList.add('running');
+    target=520;
+    brilloGear(false);
+    try{if(navigator.vibrate)navigator.vibrate([30,40,30])}catch(e){}
+    if(reduce){setP(1);terminar();return}
+    var t0=performance.now(),dur=3800;
+    (function paso(now){
+      var u=Math.min(1,(now-t0)/dur);
+      setP(.5-.5*Math.cos(Math.PI*u));
+      if(u<1)raf2=requestAnimationFrame(paso);else later(terminar,380);
+    })(t0);
+  }
+  var raf2=0;
+  function terminar(){
+    brilloGear(true);
+    scene.classList.add('done');
+    result.classList.add('show');
+    later(brilloCarta,950);
+    later(function(){cancelAnimationFrame(raf)},900);
+  }
+  function reiniciar(){
+    clearInterval(timerTw);timers.forEach(clearTimeout);timers=[];
+    cancelAnimationFrame(raf2);
+    scene.classList.remove('done');
+    spd=60;target=16;startLoop();
+    later(function(){
+      result.classList.remove('show');
+      scene.classList.remove('running');
+      run=false;setP(0);pct.textContent='0%';
+    },450);
+  }
+  document.getElementById('gear').addEventListener('click',iniciar);
+  document.getElementById('again').addEventListener('click',reiniciar);
+  setRot();startLoop();
+
+  // cuenta regresiva por fecha de calendario en Ecuador (UTC-5): cambia a las 00:00 de Ecuador
+  var DIA=86400000;
+  var hoyEC=Math.floor((Date.now()-5*3600000)/DIA);
+  var diaEvento=Math.floor(Date.UTC(2026,9,28)/DIA); // 28 de octubre de 2026
+  var d=diaEvento-hoyEC;
+  var c2=document.getElementById('count');
+  if(d>1)c2.innerHTML='Faltan <b>'+d+'</b> días';
+  else if(d===1)c2.innerHTML='Es <b>mañana</b>';
+  else if(d===0)c2.innerHTML='Es <b>hoy</b>';
+  else c2.textContent='¡Gracias por acompañarnos!';
+})();
+</script>
+
+</body>
+</html>
